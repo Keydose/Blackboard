@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/common-nighthawk/go-figure"
 	"github.com/thatisuday/commando"
 )
 
@@ -42,9 +43,15 @@ func list() {
 	tasks := openTasksFile(false)
 	defer tasks.Close()
 
+	myFigure := figure.NewFigure("Blackboard", "small", true)
+	myFigure.Print()
+	fmt.Println("")
+
 	tasksScanner := bufio.NewScanner(tasks)
+	i := 1
 	for tasksScanner.Scan() {
-		fmt.Println(tasksScanner.Text())
+		fmt.Printf("[%d] %s\n", i, tasksScanner.Text())
+		i++
 	}
 
 	checkError(tasksScanner.Err())
