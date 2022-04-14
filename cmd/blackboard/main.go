@@ -27,18 +27,6 @@ func openTasksFile(writeable bool) *os.File {
 	}
 }
 
-func add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	tasks := openTasksFile(true)
-	defer tasks.Close()
-
-	// TODO: Add support for adding tasks at a specific position
-
-	_, err := tasks.WriteString(fmt.Sprintf("%s\n", args["name"].Value))
-	checkError(err)
-
-	list()
-}
-
 func list() {
 	tasks := openTasksFile(false)
 	defer tasks.Close()
@@ -56,6 +44,21 @@ func list() {
 
 	checkError(tasksScanner.Err())
 }
+
+func add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
+	tasks := openTasksFile(true)
+	defer tasks.Close()
+
+	// TODO: Add support for adding tasks at a specific position
+
+	_, err := tasks.WriteString(fmt.Sprintf("%s\n", args["name"].Value))
+	checkError(err)
+
+	list()
+}
+
+// TODO: For move function, maybe we can use this lib: https://github.com/manifoldco/promptui
+//       - You'd navigate the current blackboard with arrow keys, select one, then move to where you want it to be and press enter
 
 func main() {
 	commando.SetExecutableName("bb").
