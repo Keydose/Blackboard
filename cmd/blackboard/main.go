@@ -90,20 +90,36 @@ func List() {
 	}
 }
 
-func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
+func Add(name string) {
 	tasks := OpenTasksFile(true)
 	defer tasks.Close()
 
-	_, err := tasks.WriteString(fmt.Sprintf("%s\n", args["name"].Value))
+	_, err := tasks.WriteString(fmt.Sprintf("%s\n", name))
 	checkError(err)
 
 	List()
 }
 
-func Move(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
-	position, err := strconv.Atoi(args["position"].Value)
-	checkError(err)
+func Remove(id int) {
+	tasksFile := OpenTasksFile(false)
 
+	taskFileLines := GetLinesFromFile(tasksFile)
+	tasksFile.Close()
+	numOfTasks := len(taskFileLines)
+	if numOfTasks > 1 && id >= numOfTasks {
+		if id == numOfTasks {
+			taskFileLines = []string{}
+		} else {
+			taskFileLines = append(taskFileLines[:id-1], taskFileLines[id:]...)
+		}
+
+		writeLinesToTempThenSwap(taskFileLines)
+	}
+
+	List()
+}
+
+func Move(id int, position int) {
 	tasksFile := OpenTasksFile(false)
 	tasksFileLines := GetLinesFromFile(tasksFile)
 	tasksFile.Close()
@@ -113,9 +129,6 @@ func Move(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
 		fmt.Println("Position is out of range")
 		return
 	}
-
-	id, err := strconv.Atoi(args["id"].Value)
-	checkError(err)
 
 	if id == position {
 		List()
@@ -148,26 +161,17 @@ func Move(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
 	List()
 }
 
-func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	lineNumberToRemove, err := strconv.Atoi(args["id"].Value)
-	checkError(err)
+func Bump(id int) {
+	Move(id, 1)
+}
 
+func Slump(id int) {
+	// Inefficient as has to load the file to get num of lines, then loads it again in Move function
 	tasksFile := OpenTasksFile(false)
-
-	taskFileLines := GetLinesFromFile(tasksFile)
+	tasksFileLines := GetLinesFromFile(tasksFile)
 	tasksFile.Close()
-	numOfTasks := len(taskFileLines)
-	if numOfTasks > 1 && lineNumberToRemove >= numOfTasks {
-		if lineNumberToRemove == numOfTasks {
-			taskFileLines = []string{}
-		} else {
-			taskFileLines = append(taskFileLines[:lineNumberToRemove-1], taskFileLines[lineNumberToRemove:]...)
-		}
 
-		writeLinesToTempThenSwap(taskFileLines)
-	}
-
-	List()
+	Move(id, len(tasksFileLines))
 }
 
 func Wipe() {
@@ -178,7 +182,7 @@ func Wipe() {
 // https://semver.org/
 func main() {
 	commando.SetExecutableName("bb").
-		SetVersion("v0.2.1").
+		SetVersion("v0.3.0").
 		SetDescription("Using text files under the hood, Blackboard aims to be a minimalistic task management app that focuses on what feels natural.")
 
 	commando.Register("list").
@@ -193,20 +197,55 @@ func main() {
 		SetShortDescription("Add a task").
 		AddArgument("name", "name of the task to create", "").
 		AddFlag("position,p", "position of the task", commando.Int, 1).
-		SetAction(Add)
+		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			Add(args["name"].Value)
+		})
+
+	commando.Register("remove").
+		SetDescription("Remove a task from the list").
+		SetShortDescription("Remove a task").
+		AddArgument("id", "id of the task to remove", "").
+		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			id, err := strconv.Atoi(args["id"].Value)
+			checkError(err)
+			Remove(id)
+		})
 
 	commando.Register("move").
 		SetDescription("Move a task (by ID) to the specified position").
 		SetShortDescription("Move a task").
 		AddArgument("id", "id of the task to move", "").
 		AddArgument("position", "position to move the task to", "").
-		SetAction(Move)
+		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			idAsInt, err := strconv.Atoi(args["id"].Value)
+			checkError(err)
+			positionAsInt, err := strconv.Atoi(args["position"].Value)
+			checkError(err)
 
-	commando.Register("remove").
-		SetDescription("Remove a task from the list").
-		SetShortDescription("Remove a task").
-		AddArgument("id", "id of the task to remove", "").
-		SetAction(Remove)
+			Move(idAsInt, positionAsInt)
+		})
+
+	commando.Register("bump").
+		SetDescription("Bump a task (by ID) to the top").
+		SetShortDescription("Bump a task").
+		AddArgument("id", "id of the task to bump", "").
+		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			idAsInt, err := strconv.Atoi(args["id"].Value)
+			checkError(err)
+
+			Bump(idAsInt)
+		})
+
+	commando.Register("slump").
+		SetDescription("Slump a task (by ID) to the bottom").
+		SetShortDescription("Slump a task").
+		AddArgument("id", "id of the task to slump", "").
+		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			idAsInt, err := strconv.Atoi(args["id"].Value)
+			checkError(err)
+
+			Slump(idAsInt)
+		})
 
 	commando.Register("wipe").
 		SetDescription("Wipe all tasks from the list").
