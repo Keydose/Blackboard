@@ -78,7 +78,7 @@ func List() {
 	fmt.Println("")
 
 	fileLines := GetLinesFromFile(tasksFile)
-	if len(fileLines) == 1 {
+	if len(fileLines) == 0 {
 		fmt.Println("No tasks found, add some!")
 		fmt.Println("Syntax: bb add <task name> -p <position>")
 	} else {
