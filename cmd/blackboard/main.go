@@ -55,11 +55,25 @@ func add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue)
 	list()
 }
 
+func remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
+	tasks := openTasksFile(true)
+	defer tasks.Close()
+
+	// TODO: Figure out how to remove a line from a file by n
+}
+
 // https://semver.org/
 func main() {
 	commando.SetExecutableName("bb").
 		SetVersion("v0.1.0").
 		SetDescription("A minimalistic CLI task list app - just move it to the top if it's more urgent!")
+
+	commando.Register("list").
+		SetDescription("List all tasks").
+		SetShortDescription("List all tasks").
+		SetAction(func(_ map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			list()
+		})
 
 	commando.Register("add").
 		SetDescription("Add a task to the list of tasks").
@@ -68,16 +82,11 @@ func main() {
 		AddFlag("position,p", "position of the task", commando.Int, 1).
 		SetAction(add)
 
-	commando.Register("list").
-		SetDescription("List all tasks").
-		SetShortDescription("List all tasks").
-		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-			list()
-		})
-
 	commando.Register("remove").
 		SetDescription("Remove a task from the list").
-		SetShortDescription("Remove a task")
+		SetShortDescription("Remove a task").
+		AddArgument("id", "id of the task to remove", "").
+		SetAction(remove)
 
 	commando.Parse(nil)
 }
