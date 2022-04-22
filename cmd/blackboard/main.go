@@ -55,9 +55,10 @@ func add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue)
 	list()
 }
 
+// https://semver.org/
 func main() {
 	commando.SetExecutableName("bb").
-		SetVersion("v1.0.0").
+		SetVersion("v0.1.0").
 		SetDescription("A minimalistic CLI task list app - just move it to the top if it's more urgent!")
 
 	commando.Register("add").
