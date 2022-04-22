@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/common-nighthawk/go-figure"
 	"github.com/thatisuday/commando"
@@ -12,6 +13,18 @@ import (
 func checkError(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+func OpenTempFile(writeable bool) *os.File {
+	if writeable {
+		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		checkError(err)
+		return temp
+	} else {
+		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_RDONLY, 0666)
+		checkError(err)
+		return temp
 	}
 }
 
@@ -59,9 +72,13 @@ func List() {
 	checkError(tasksScanner.Err())
 }
 
-func Wipe() {
+func removeTasksFile() {
 	err := os.Remove("../../tasks.txt")
 	checkError(err)
+}
+
+func Wipe() {
+	removeTasksFile()
 	List()
 }
 
@@ -76,10 +93,28 @@ func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue)
 }
 
 func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	tasks := OpenTasksFile(true)
-	defer tasks.Close()
+	id, err := strconv.Atoi(args["id"].Value)
+	checkError(err)
 
-	// TODO: Figure out how to remove a line from a file by n
+	tasks := OpenTasksFile(false)
+
+	lines := GetLinesFromFile(tasks)
+	tasks.Close()
+	lines = append(lines[:id-1], lines[id:]...)
+
+	tempFile := OpenTempFile(true)
+	defer tempFile.Close()
+	for _, line := range lines {
+		_, err := tempFile.WriteString(fmt.Sprintf("%s\n", line))
+		checkError(err)
+	}
+
+	defer tempFile.Close()
+
+	Wipe()
+	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
+
+	List()
 }
 
 // https://semver.org/
