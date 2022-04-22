@@ -88,6 +88,8 @@ func List() {
 			i++
 		}
 	}
+
+	fmt.Println("")
 }
 
 func Add(name string) {
