@@ -34,7 +34,7 @@ TBD - Likely to be on npm
 bb add "Get back to John re. our upcoming API integration"
 
 # Add a task in position 4
-bb add "Schedule a meeting that should just be an email" p:4
+bb add "Schedule a meeting that should just be an email" -p 4
 ```
 
 ### Bump a task to the top
