@@ -15,7 +15,7 @@ func checkError(err error) {
 	}
 }
 
-func openTasksFile(writeable bool) *os.File {
+func OpenTasksFile(writeable bool) *os.File {
 	if writeable {
 		tasks, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		checkError(err)
@@ -27,8 +27,17 @@ func openTasksFile(writeable bool) *os.File {
 	}
 }
 
-func list() {
-	tasks := openTasksFile(false)
+func GetLinesFromFile(file *os.File) []string {
+	scanner := bufio.NewScanner(file)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
+}
+
+func List() {
+	tasks := OpenTasksFile(false)
 	defer tasks.Close()
 
 	myFigure := figure.NewFigure("Blackboard", "small", true)
@@ -37,8 +46,8 @@ func list() {
 
 	tasksScanner := bufio.NewScanner(tasks)
 	i := 1
-	for tasksScanner.Scan() {
-		fmt.Printf("[%d] %s\n", i, tasksScanner.Text())
+	for _, task := range GetLinesFromFile(tasks) {
+		fmt.Printf("[%d] %s\n", i, task)
 		i++
 	}
 
@@ -50,18 +59,18 @@ func list() {
 	checkError(tasksScanner.Err())
 }
 
-func add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	tasks := openTasksFile(true)
+func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
+	tasks := OpenTasksFile(true)
 	defer tasks.Close()
 
 	_, err := tasks.WriteString(fmt.Sprintf("%s\n", args["name"].Value))
 	checkError(err)
 
-	list()
+	List()
 }
 
-func remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	tasks := openTasksFile(true)
+func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
+	tasks := OpenTasksFile(true)
 	defer tasks.Close()
 
 	// TODO: Figure out how to remove a line from a file by n
@@ -77,7 +86,7 @@ func main() {
 		SetDescription("List all tasks").
 		SetShortDescription("List all tasks").
 		SetAction(func(_ map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
-			list()
+			List()
 		})
 
 	commando.Register("add").
@@ -85,13 +94,13 @@ func main() {
 		SetShortDescription("Add a task").
 		AddArgument("name", "name of the task to create", "").
 		AddFlag("position,p", "position of the task", commando.Int, 1).
-		SetAction(add)
+		SetAction(Add)
 
 	commando.Register("remove").
 		SetDescription("Remove a task from the list").
 		SetShortDescription("Remove a task").
 		AddArgument("id", "id of the task to remove", "").
-		SetAction(remove)
+		SetAction(Remove)
 
 	commando.Parse(nil)
 }
