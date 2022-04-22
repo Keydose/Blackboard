@@ -65,7 +65,7 @@ func List() {
 	tasksScanner := bufio.NewScanner(tasks)
 	i := 1
 	for _, task := range GetLinesFromFile(tasks) {
-		fmt.Printf("[%d] %s\n", i, task)
+		fmt.Printf("(%d) %s\n", i, task)
 		i++
 	}
 
@@ -112,6 +112,8 @@ func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 
 	removeTasksFile()
 	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
+
+	// TODO: Add the removed tasks to a tasks.archive.txt file
 
 	List()
 }
