@@ -106,16 +106,23 @@ func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue)
 }
 
 func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	id, err := strconv.Atoi(args["id"].Value)
+	lineNumberToRemove, err := strconv.Atoi(args["id"].Value)
 	checkError(err)
 
 	tasks := OpenTasksFile(false)
 
 	lines := GetLinesFromFile(tasks)
 	tasks.Close()
-	lines = append(lines[:id-1], lines[id:]...)
+	numOfLines := len(lines)
+	if numOfLines > 1 && lineNumberToRemove >= numOfLines {
+		if lineNumberToRemove == len(lines) {
+			lines = []string{}
+		} else {
+			lines = append(lines[:lineNumberToRemove-1], lines[lineNumberToRemove:]...)
+		}
 
-	writeLinesToTempThenSwap(lines)
+		writeLinesToTempThenSwap(lines)
+	}
 
 	List()
 }
