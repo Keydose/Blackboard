@@ -114,9 +114,37 @@ func Move(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
 		return
 	}
 
-	// TODO: Move specified line to specified position
-	//id, err := strconv.Atoi(args["id"].Value)
+	id, err := strconv.Atoi(args["id"].Value)
+	checkError(err)
 
+	if id == position {
+		List()
+		return
+	}
+
+	task := tasksFileLines[id-1]
+
+	if id == numOfTasks && position == 1 {
+		// Move from bottom to top
+		tasksFileLines = append([]string{task}, tasksFileLines[0:numOfTasks-1]...)
+	} else if id == 1 && position == numOfTasks {
+		// Move from top to bottom
+		tasksFileLines = append(tasksFileLines[1:numOfTasks], task)
+	} else {
+		// Everything before task being moved, then everything after it
+		tasksFileLines = append(tasksFileLines[:id-1], tasksFileLines[id:]...)
+		// Buffer slice that covers the start up to position
+		bufferSlice := make([]string, position)
+		// Copy everything up to (and including) position into buffer
+		copy(bufferSlice, tasksFileLines[:position-1])
+		// Set position to task (task is now moved)
+		bufferSlice[position-1] = task
+
+		// Join start -> position, with everything after it
+		tasksFileLines = append(bufferSlice, tasksFileLines[position-1:]...)
+	}
+
+	writeLinesToTempThenSwap(tasksFileLines)
 	List()
 }
 
