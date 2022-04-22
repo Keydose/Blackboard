@@ -59,6 +59,12 @@ func List() {
 	checkError(tasksScanner.Err())
 }
 
+func Wipe() {
+	err := os.Remove("../../tasks.txt")
+	checkError(err)
+	List()
+}
+
 func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 	tasks := OpenTasksFile(true)
 	defer tasks.Close()

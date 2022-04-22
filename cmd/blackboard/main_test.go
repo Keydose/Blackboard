@@ -8,7 +8,9 @@ import (
 	"github.com/thatisuday/commando"
 )
 
+// Wipes tasks.txt, adds a task and then tests lines from file
 func TestAdd(t *testing.T) {
+	Wipe()
 	Add(map[string]commando.ArgValue{"name": {Value: "test"}}, map[string]commando.FlagValue{})
 	file := OpenTasksFile(false)
 	got := GetLinesFromFile(file)
