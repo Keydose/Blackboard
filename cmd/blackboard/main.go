@@ -84,7 +84,7 @@ func List() {
 	} else {
 		i := 1
 		for _, task := range fileLines {
-			fmt.Printf("(%d) %s\n", i, task)
+			fmt.Printf("%d. %s\n", i, task)
 			i++
 		}
 	}
