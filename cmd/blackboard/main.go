@@ -21,6 +21,19 @@ func removeTasksFile() {
 	checkError(err)
 }
 
+func writeLinesToTempThenSwap(lines []string) {
+	tempFile := OpenTempFile(true)
+	for _, line := range lines {
+		_, err := tempFile.WriteString(fmt.Sprintf("%s\n", line))
+		checkError(err)
+	}
+
+	tempFile.Close()
+
+	removeTasksFile()
+	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
+}
+
 func OpenTempFile(writeable bool) *os.File {
 	if writeable {
 		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
@@ -102,18 +115,7 @@ func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 	tasks.Close()
 	lines = append(lines[:id-1], lines[id:]...)
 
-	tempFile := OpenTempFile(true)
-	for _, line := range lines {
-		_, err := tempFile.WriteString(fmt.Sprintf("%s\n", line))
-		checkError(err)
-	}
-
-	tempFile.Close()
-
-	removeTasksFile()
-	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
-
-	// TODO: Add the removed tasks to a tasks.archive.txt file
+	writeLinesToTempThenSwap(lines)
 
 	List()
 }
