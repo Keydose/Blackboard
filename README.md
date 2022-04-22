@@ -1,3 +1,5 @@
+![Blackboard Header Image](./blackboard.png)
+
 # Blackboard
 
 Using text files under the hood, Blackboard aims to be a minimalistic task management app that focuses on what feels natural.
