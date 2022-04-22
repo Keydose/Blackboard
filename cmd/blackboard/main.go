@@ -21,11 +21,6 @@ func removeTasksFile() {
 	checkError(err)
 }
 
-func removeTempFile() {
-	err := os.Remove("../../tasks.tmp.txt")
-	checkError(err)
-}
-
 func OpenTempFile(writeable bool) *os.File {
 	if writeable {
 		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
@@ -108,19 +103,17 @@ func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 	lines = append(lines[:id-1], lines[id:]...)
 
 	tempFile := OpenTempFile(true)
-	defer tempFile.Close()
 	for _, line := range lines {
 		_, err := tempFile.WriteString(fmt.Sprintf("%s\n", line))
 		checkError(err)
 	}
 
-	defer tempFile.Close()
+	tempFile.Close()
 
-	Wipe()
+	removeTasksFile()
 	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
 
 	List()
-	removeTempFile()
 }
 
 // https://semver.org/
