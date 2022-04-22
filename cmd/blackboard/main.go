@@ -22,77 +22,72 @@ func removeTasksFile() {
 }
 
 func writeLinesToTempThenSwap(lines []string) {
-	tempFile := OpenTempFile(true)
+	tempTasksFile := OpenTempTasksFile(true)
 	for _, line := range lines {
-		_, err := tempFile.WriteString(fmt.Sprintf("%s\n", line))
+		_, err := tempTasksFile.WriteString(fmt.Sprintf("%s\n", line))
 		checkError(err)
 	}
 
-	tempFile.Close()
+	tempTasksFile.Close()
 
 	removeTasksFile()
 	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
 }
 
-func OpenTempFile(writeable bool) *os.File {
+func OpenTempTasksFile(writeable bool) *os.File {
 	if writeable {
-		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		tempTasksFile, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		checkError(err)
-		return temp
+		return tempTasksFile
 	} else {
-		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_RDONLY, 0666)
+		tempTasksFile, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_RDONLY, 0666)
 		checkError(err)
-		return temp
+		return tempTasksFile
 	}
 }
 
 func OpenTasksFile(writeable bool) *os.File {
 	if writeable {
-		tasks, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		tasksFile, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		checkError(err)
-		return tasks
+		return tasksFile
 	} else {
-		tasks, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_RDONLY, 0666)
+		tasksFile, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_RDONLY, 0666)
 		checkError(err)
-		return tasks
+		return tasksFile
 	}
 }
 
 func GetLinesFromFile(file *os.File) []string {
 	scanner := bufio.NewScanner(file)
-	var lines []string
+	var fileLines []string
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		fileLines = append(fileLines, scanner.Text())
 	}
-	return lines
+
+	checkError(scanner.Err())
+
+	return fileLines
 }
 
 func List() {
-	tasks := OpenTasksFile(false)
-	defer tasks.Close()
+	tasksFile := OpenTasksFile(false)
 
-	myFigure := figure.NewFigure("Blackboard", "small", true)
-	myFigure.Print()
+	blackboardAscii := figure.NewFigure("Blackboard", "small", true)
+	blackboardAscii.Print()
 	fmt.Println("")
 
-	tasksScanner := bufio.NewScanner(tasks)
-	i := 1
-	for _, task := range GetLinesFromFile(tasks) {
-		fmt.Printf("(%d) %s\n", i, task)
-		i++
-	}
-
-	if i == 1 {
+	fileLines := GetLinesFromFile(tasksFile)
+	if len(fileLines) == 1 {
 		fmt.Println("No tasks found, add some!")
 		fmt.Println("Syntax: bb add <task name> -p <position>")
+	} else {
+		i := 1
+		for _, task := range fileLines {
+			fmt.Printf("(%d) %s\n", i, task)
+			i++
+		}
 	}
-
-	checkError(tasksScanner.Err())
-}
-
-func Wipe() {
-	removeTasksFile()
-	List()
 }
 
 func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
@@ -105,25 +100,50 @@ func Add(args map[string]commando.ArgValue, flags map[string]commando.FlagValue)
 	List()
 }
 
+func Move(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+	position, err := strconv.Atoi(args["position"].Value)
+	checkError(err)
+
+	tasksFile := OpenTasksFile(false)
+	tasksFileLines := GetLinesFromFile(tasksFile)
+	tasksFile.Close()
+	numOfTasks := len(tasksFileLines)
+
+	if position < 1 || position > numOfTasks {
+		fmt.Println("Position is out of range")
+		return
+	}
+
+	// TODO: Move specified line to specified position
+	//id, err := strconv.Atoi(args["id"].Value)
+
+	List()
+}
+
 func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 	lineNumberToRemove, err := strconv.Atoi(args["id"].Value)
 	checkError(err)
 
-	tasks := OpenTasksFile(false)
+	tasksFile := OpenTasksFile(false)
 
-	lines := GetLinesFromFile(tasks)
-	tasks.Close()
-	numOfLines := len(lines)
-	if numOfLines > 1 && lineNumberToRemove >= numOfLines {
-		if lineNumberToRemove == len(lines) {
-			lines = []string{}
+	taskFileLines := GetLinesFromFile(tasksFile)
+	tasksFile.Close()
+	numOfTasks := len(taskFileLines)
+	if numOfTasks > 1 && lineNumberToRemove >= numOfTasks {
+		if lineNumberToRemove == numOfTasks {
+			taskFileLines = []string{}
 		} else {
-			lines = append(lines[:lineNumberToRemove-1], lines[lineNumberToRemove:]...)
+			taskFileLines = append(taskFileLines[:lineNumberToRemove-1], taskFileLines[lineNumberToRemove:]...)
 		}
 
-		writeLinesToTempThenSwap(lines)
+		writeLinesToTempThenSwap(taskFileLines)
 	}
 
+	List()
+}
+
+func Wipe() {
+	removeTasksFile()
 	List()
 }
 
@@ -146,6 +166,13 @@ func main() {
 		AddArgument("name", "name of the task to create", "").
 		AddFlag("position,p", "position of the task", commando.Int, 1).
 		SetAction(Add)
+
+	commando.Register("move").
+		SetDescription("Move a task (by ID) to the specified position").
+		SetShortDescription("Move a task").
+		AddArgument("id", "id of the task to move", "").
+		AddArgument("position", "position to move the task to", "").
+		SetAction(Move)
 
 	commando.Register("remove").
 		SetDescription("Remove a task from the list").
