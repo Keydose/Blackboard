@@ -17,11 +17,11 @@ func checkError(err error) {
 
 func openTasksFile(writeable bool) *os.File {
 	if writeable {
-		tasks, err := os.OpenFile("../../tasks.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		tasks, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		checkError(err)
 		return tasks
 	} else {
-		tasks, err := os.Open("../../tasks.txt")
+		tasks, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_RDONLY, 0666)
 		checkError(err)
 		return tasks
 	}
