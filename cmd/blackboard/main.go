@@ -142,5 +142,12 @@ func main() {
 		AddArgument("id", "id of the task to remove", "").
 		SetAction(Remove)
 
+	commando.Register("wipe").
+		SetDescription("Wipe all tasks from the list").
+		SetShortDescription("Wipe all tasks").
+		SetAction(func(_ map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			Wipe()
+		})
+
 	commando.Parse(nil)
 }
