@@ -16,6 +16,16 @@ func checkError(err error) {
 	}
 }
 
+func removeTasksFile() {
+	err := os.Remove("../../tasks.txt")
+	checkError(err)
+}
+
+func removeTempFile() {
+	err := os.Remove("../../tasks.tmp.txt")
+	checkError(err)
+}
+
 func OpenTempFile(writeable bool) *os.File {
 	if writeable {
 		temp, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
@@ -72,11 +82,6 @@ func List() {
 	checkError(tasksScanner.Err())
 }
 
-func removeTasksFile() {
-	err := os.Remove("../../tasks.txt")
-	checkError(err)
-}
-
 func Wipe() {
 	removeTasksFile()
 	List()
@@ -115,6 +120,7 @@ func Remove(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
 
 	List()
+	removeTempFile()
 }
 
 // https://semver.org/
