@@ -16,9 +16,25 @@ func checkError(err error) {
 	}
 }
 
-func removeTasksFile() {
-	err := os.Remove("../../tasks.txt")
+func removeFile(path string) {
+	err := os.Remove(path)
 	checkError(err)
+}
+
+func removeTasksFile() {
+	removeFile("../../tasks.txt")
+}
+
+func openFile(path string, writeable bool) *os.File {
+	if writeable {
+		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		checkError(err)
+		return tasksFile
+	} else {
+		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0666)
+		checkError(err)
+		return tasksFile
+	}
 }
 
 func writeLinesToTempThenSwap(lines []string) {
@@ -34,28 +50,12 @@ func writeLinesToTempThenSwap(lines []string) {
 	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
 }
 
-func OpenTempTasksFile(writeable bool) *os.File {
-	if writeable {
-		tempTasksFile, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-		checkError(err)
-		return tempTasksFile
-	} else {
-		tempTasksFile, err := os.OpenFile("../../tasks.tmp.txt", os.O_CREATE|os.O_RDONLY, 0666)
-		checkError(err)
-		return tempTasksFile
-	}
+func OpenTasksFile(writeable bool) *os.File {
+	return openFile("../../tasks.txt", writeable)
 }
 
-func OpenTasksFile(writeable bool) *os.File {
-	if writeable {
-		tasksFile, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-		checkError(err)
-		return tasksFile
-	} else {
-		tasksFile, err := os.OpenFile("../../tasks.txt", os.O_CREATE|os.O_RDONLY, 0666)
-		checkError(err)
-		return tasksFile
-	}
+func OpenTempTasksFile(writeable bool) *os.File {
+	return openFile("../../tasks.tmp.txt", writeable)
 }
 
 func GetLinesFromFile(file *os.File) []string {
@@ -150,7 +150,7 @@ func Wipe() {
 // https://semver.org/
 func main() {
 	commando.SetExecutableName("bb").
-		SetVersion("v0.2.0").
+		SetVersion("v0.2.1").
 		SetDescription("Using text files under the hood, Blackboard aims to be a minimalistic task management app that focuses on what feels natural.")
 
 	commando.Register("list").
