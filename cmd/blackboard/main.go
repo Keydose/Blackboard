@@ -108,7 +108,7 @@ func Remove(id int) {
 	taskFileLines := GetLinesFromFile(tasksFile)
 	tasksFile.Close()
 	numOfTasks := len(taskFileLines)
-	if numOfTasks > 1 && id <= numOfTasks {
+	if numOfTasks > 0 && id <= numOfTasks {
 		if id == numOfTasks {
 			taskFileLines = []string{}
 		} else {
@@ -184,7 +184,7 @@ func Wipe() {
 // https://semver.org/
 func main() {
 	commando.SetExecutableName("bb").
-		SetVersion("v0.3.4").
+		SetVersion("v0.3.6").
 		SetDescription("Using text files under the hood, Blackboard aims to be a minimalistic task management app that focuses on what feels natural.")
 
 	commando.Register("list").
