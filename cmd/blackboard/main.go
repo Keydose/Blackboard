@@ -42,6 +42,11 @@ func list() {
 		i++
 	}
 
+	if i == 1 {
+		fmt.Println("No tasks found, add some!")
+		fmt.Println("Syntax: bb add <task name> -p <position>")
+	}
+
 	checkError(tasksScanner.Err())
 }
 
