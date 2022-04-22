@@ -1,11 +1,14 @@
 # Blackboard
 
-Blackboard aims to be a minimalistic task management app that focuses on what feels natural.
-If you find yourself needing a place to quickly jot down things that need to be done, as well as keep
-track of what order you should do them in, this is probably the tool for you.
+Using text files under the hood, Blackboard aims to be a minimalistic task management app that focuses on what feels natural.
+If you find yourself needing a place to quickly jot down things that need to be done, as well as keep track of what order you should do them in, this is probably the tool for you.
 
-Blackboard doesn't bother with giving tasks priorities, giving them due dates, giving them urgency flags etc. - just
-look at what position it's at in the list.
+Blackboard is opinionated and doesn't try to be something that it isn't:
+- No task priorities
+- No due dates
+- No urgency flags
+
+When used in conjunction with a more elaborate task management system such as Jira, Trello, Asana or ClickUp (to name a few), this satisfies that gap in between: where tasks aren't quite within scope of those boards, but still need to get done.
 
 ## Highlights
 
@@ -14,6 +17,7 @@ look at what position it's at in the list.
 - Slump tasks to the bottom of your list
 - Move tasks to specific positions
 - Remove tasks from the list when completed
+- Wipe all tasks
 
 ## Installation
 
@@ -56,6 +60,13 @@ bb move 7 2
 
 ```
 # Remove task 9
+bb remove 9
+```
+
+### Wipe all tasks
+
+```
+# Wipe tasks by deleting tasks.txt
 bb remove 9
 ```
 
