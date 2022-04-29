@@ -69,7 +69,7 @@ bb remove 9
 
 ```
 # Wipe tasks by deleting tasks.txt
-bb remove 9
+bb wipe
 ```
 
 ## Authors
