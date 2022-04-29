@@ -92,14 +92,19 @@ func List() {
 	fmt.Println("")
 }
 
-func Add(name string) {
-	tasks := OpenTasksFile(true)
-	defer tasks.Close()
+func Add(name string) int {
+	tasksFile := OpenTasksFile(true)
 
-	_, err := tasks.WriteString(fmt.Sprintf("%s\n", name))
+	_, err := tasksFile.WriteString(fmt.Sprintf("%s\n", name))
 	checkError(err)
 
+	fileLines := GetLinesFromFile(tasksFile)
+	addedId := len(fileLines)
+	tasksFile.Close()
+
 	List()
+
+	return addedId
 }
 
 func Remove(id int) {
@@ -127,7 +132,7 @@ func Move(id int, position int) {
 	tasksFile.Close()
 	numOfTasks := len(tasksFileLines)
 
-	if position < 1 || position > numOfTasks {
+	if position < 0 || position > numOfTasks {
 		fmt.Println("Position is out of range")
 		return
 	}
@@ -198,9 +203,14 @@ func main() {
 		SetDescription("Add a task to the list of tasks").
 		SetShortDescription("Add a task").
 		AddArgument("name", "name of the task to create", "").
-		AddFlag("position,p", "position of the task", commando.Int, 1).
-		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
-			Add(args["name"].Value)
+		AddFlag("position,p", "position of the task", commando.Int, 0).
+		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
+			addedId := Add(args["name"].Value)
+			targetPosition := flags["position"].Value.(int)
+
+			if targetPosition > 0 {
+				Move(addedId, targetPosition)
+			}
 		})
 
 	commando.Register("remove").
