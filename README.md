@@ -1,4 +1,4 @@
-![Blackboard Header Image](blackboard.png)
+![Blackboard Header Image](assets/github_banner.png)
 
 # Blackboard
 
