@@ -27,7 +27,7 @@ func removeTasksFile() {
 
 func openFile(path string, readable bool, writeable bool) *os.File {
 	if readable && writeable {
-		tasksFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
+		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 		checkError(err)
 		return tasksFile
 	} else if readable {
@@ -35,7 +35,7 @@ func openFile(path string, readable bool, writeable bool) *os.File {
 		checkError(err)
 		return tasksFile
 	} else if writeable {
-		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		checkError(err)
 		return tasksFile
 	}
@@ -105,6 +105,7 @@ func Add(name string, position int) {
 	checkError(err)
 
 	fileLines := GetLinesFromFile(tasksFile)
+	fmt.Printf("%v", fileLines)
 	tasksFile.Close() // Close after reading number of lines
 	addedId := len(fileLines)
 
