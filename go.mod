@@ -1,4 +1,4 @@
-module main
+module github.com/Keydose/Blackboard
 
 go 1.17
 
