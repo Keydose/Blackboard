@@ -134,7 +134,7 @@ func Remove(id int) {
 	tasksFile.Close()
 	numOfTasks := len(taskFileLines)
 	if numOfTasks > 0 && id <= numOfTasks {
-		if id == numOfTasks {
+		if id == numOfTasks && numOfTasks == 1 {
 			taskFileLines = []string{}
 		} else {
 			taskFileLines = append(taskFileLines[:id-1], taskFileLines[id:]...)
