@@ -37,6 +37,13 @@ bb add "Get back to John re. our upcoming API integration"
 bb add "Schedule a meeting that should just be an email" -p 4
 ```
 
+### Edit a task
+
+```
+# Edit task 3
+bb edit 3 "Actually, I need to reply to their message"
+```
+
 ### Bump a task to the top
 
 ```

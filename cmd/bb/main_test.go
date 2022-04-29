@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+// TODO: Write more elaborate and more comprehensive tests that actually help - the below is more of a proof of concept
+
 // Wipes tasks.txt, adds a task and then tests lines from file
 func TestAdd(t *testing.T) {
 	Wipe()

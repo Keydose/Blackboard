@@ -99,7 +99,6 @@ func List() {
 }
 
 func Add(name string, position int) {
-	fmt.Printf("Adding task '%s' to position %d\n", name, position)
 	tasksFile := OpenTasksFile(false, true)
 	_, err := tasksFile.WriteString(fmt.Sprintf("%s\n", name))
 	tasksFile.Close()
@@ -108,11 +107,24 @@ func Add(name string, position int) {
 	if position > 0 {
 		tasksFile = OpenTasksFile(true, false)
 		taskFileLines := GetLinesFromFile(tasksFile)
-		fmt.Printf("%v", taskFileLines)
 		tasksFile.Close()
 		addedId := len(taskFileLines)
 		Move(addedId, position)
 	}
+}
+
+func Edit(id int, name string) {
+	tasksFile := OpenTasksFile(true, false)
+	taskFileLines := GetLinesFromFile(tasksFile)
+	tasksFile.Close()
+
+	if (id <= 0) || (id > len(taskFileLines)) {
+		fmt.Println("ID is out of range")
+		return
+	}
+
+	taskFileLines[id-1] = name
+	writeLinesToTempThenSwap(taskFileLines)
 }
 
 func Remove(id int) {
@@ -209,6 +221,19 @@ func main() {
 		AddFlag("position,p", "position of the task", commando.Int, 0).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 			Add(args["name"].Value, flags["position"].Value.(int))
+			List()
+		})
+
+	commando.Register("edit").
+		SetDescription("Edit a task (by ID)").
+		SetShortDescription("Add a task").
+		AddArgument("id", "id of the task to edit", "").
+		AddArgument("name", "new name for the task", "").
+		SetAction(func(args map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
+			idAsInt, err := strconv.Atoi(args["id"].Value)
+			checkError(err)
+
+			Edit(idAsInt, args["name"].Value)
 			List()
 		})
 
