@@ -92,19 +92,19 @@ func List() {
 	fmt.Println("")
 }
 
-func Add(name string) int {
+func Add(name string, position int) {
 	tasksFile := OpenTasksFile(true)
 
 	_, err := tasksFile.WriteString(fmt.Sprintf("%s\n", name))
 	checkError(err)
 
 	fileLines := GetLinesFromFile(tasksFile)
-	addedId := len(fileLines)
 	tasksFile.Close()
+	addedId := len(fileLines)
 
-	List()
-
-	return addedId
+	if position > 0 {
+		Move(addedId, position)
+	}
 }
 
 func Remove(id int) {
@@ -122,8 +122,6 @@ func Remove(id int) {
 
 		writeLinesToTempThenSwap(taskFileLines)
 	}
-
-	List()
 }
 
 func Move(id int, position int) {
@@ -132,13 +130,12 @@ func Move(id int, position int) {
 	tasksFile.Close()
 	numOfTasks := len(tasksFileLines)
 
-	if position < 0 || position > numOfTasks {
-		fmt.Println("Position is out of range")
+	if id == position {
 		return
 	}
 
-	if id == position {
-		List()
+	if position < 0 || position > numOfTasks {
+		fmt.Println("Position is out of range")
 		return
 	}
 
@@ -165,7 +162,6 @@ func Move(id int, position int) {
 	}
 
 	writeLinesToTempThenSwap(tasksFileLines)
-	List()
 }
 
 func Bump(id int) {
@@ -183,7 +179,6 @@ func Slump(id int) {
 
 func Wipe() {
 	removeTasksFile()
-	List()
 }
 
 // https://semver.org/
@@ -205,12 +200,8 @@ func main() {
 		AddArgument("name", "name of the task to create", "").
 		AddFlag("position,p", "position of the task", commando.Int, 0).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-			addedId := Add(args["name"].Value)
-			targetPosition := flags["position"].Value.(int)
-
-			if targetPosition > 0 {
-				Move(addedId, targetPosition)
-			}
+			Add(args["name"].Value, flags["position"].Value.(int))
+			List()
 		})
 
 	commando.Register("remove").
@@ -221,6 +212,7 @@ func main() {
 			id, err := strconv.Atoi(args["id"].Value)
 			checkError(err)
 			Remove(id)
+			List()
 		})
 
 	commando.Register("move").
@@ -235,6 +227,7 @@ func main() {
 			checkError(err)
 
 			Move(idAsInt, positionAsInt)
+			List()
 		})
 
 	commando.Register("bump").
@@ -246,6 +239,7 @@ func main() {
 			checkError(err)
 
 			Bump(idAsInt)
+			List()
 		})
 
 	commando.Register("slump").
@@ -257,6 +251,7 @@ func main() {
 			checkError(err)
 
 			Slump(idAsInt)
+			List()
 		})
 
 	commando.Register("wipe").
@@ -264,6 +259,7 @@ func main() {
 		SetShortDescription("Wipe all tasks").
 		SetAction(func(_ map[string]commando.ArgValue, _ map[string]commando.FlagValue) {
 			Wipe()
+			List()
 		})
 
 	commando.Parse(nil)

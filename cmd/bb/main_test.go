@@ -9,7 +9,7 @@ import (
 // Wipes tasks.txt, adds a task and then tests lines from file
 func TestAdd(t *testing.T) {
 	Wipe()
-	Add("test")
+	Add("test", 0)
 	file := OpenTasksFile(false)
 	got := GetLinesFromFile(file)
 	fmt.Printf("%v", got)
