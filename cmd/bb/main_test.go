@@ -10,7 +10,7 @@ import (
 func TestAdd(t *testing.T) {
 	Wipe()
 	Add("test", 0)
-	file := OpenTasksFile(false)
+	file := OpenTasksFile(true, false)
 	got := GetLinesFromFile(file)
 	fmt.Printf("%v", got)
 	want := []string{"test"}

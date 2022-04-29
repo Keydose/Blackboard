@@ -25,20 +25,26 @@ func removeTasksFile() {
 	removeFile("../../tasks.txt")
 }
 
-func openFile(path string, writeable bool) *os.File {
-	if writeable {
-		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+func openFile(path string, readable bool, writeable bool) *os.File {
+	if readable && writeable {
+		tasksFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
 		checkError(err)
 		return tasksFile
-	} else {
+	} else if readable {
 		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0666)
 		checkError(err)
 		return tasksFile
+	} else if writeable {
+		tasksFile, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		checkError(err)
+		return tasksFile
 	}
+
+	return nil
 }
 
 func writeLinesToTempThenSwap(lines []string) {
-	tempTasksFile := OpenTempTasksFile(true)
+	tempTasksFile := OpenTempTasksFile(false, true)
 	for _, line := range lines {
 		_, err := tempTasksFile.WriteString(fmt.Sprintf("%s\n", line))
 		checkError(err)
@@ -50,12 +56,12 @@ func writeLinesToTempThenSwap(lines []string) {
 	os.Rename("../../tasks.tmp.txt", "../../tasks.txt")
 }
 
-func OpenTasksFile(writeable bool) *os.File {
-	return openFile("../../tasks.txt", writeable)
+func OpenTasksFile(readable bool, writeable bool) *os.File {
+	return openFile("../../tasks.txt", readable, writeable)
 }
 
-func OpenTempTasksFile(writeable bool) *os.File {
-	return openFile("../../tasks.tmp.txt", writeable)
+func OpenTempTasksFile(readable bool, writeable bool) *os.File {
+	return openFile("../../tasks.tmp.txt", readable, writeable)
 }
 
 func GetLinesFromFile(file *os.File) []string {
@@ -71,7 +77,7 @@ func GetLinesFromFile(file *os.File) []string {
 }
 
 func List() {
-	tasksFile := OpenTasksFile(false)
+	tasksFile := OpenTasksFile(true, false)
 
 	blackboardAscii := figure.NewFigure("Blackboard", "small", true)
 	blackboardAscii.Print()
@@ -93,22 +99,22 @@ func List() {
 }
 
 func Add(name string, position int) {
-	tasksFile := OpenTasksFile(true)
+	tasksFile := OpenTasksFile(true, true) // Open file as read-write
 
 	_, err := tasksFile.WriteString(fmt.Sprintf("%s\n", name))
 	checkError(err)
 
 	fileLines := GetLinesFromFile(tasksFile)
-	tasksFile.Close()
+	tasksFile.Close() // Close after reading number of lines
 	addedId := len(fileLines)
 
 	if position > 0 {
-		Move(addedId, position)
+		Move(addedId, position) // Will be reopened again as write
 	}
 }
 
 func Remove(id int) {
-	tasksFile := OpenTasksFile(false)
+	tasksFile := OpenTasksFile(true, false)
 
 	taskFileLines := GetLinesFromFile(tasksFile)
 	tasksFile.Close()
@@ -125,7 +131,7 @@ func Remove(id int) {
 }
 
 func Move(id int, position int) {
-	tasksFile := OpenTasksFile(false)
+	tasksFile := OpenTasksFile(true, false)
 	tasksFileLines := GetLinesFromFile(tasksFile)
 	tasksFile.Close()
 	numOfTasks := len(tasksFileLines)
@@ -170,7 +176,7 @@ func Bump(id int) {
 
 func Slump(id int) {
 	// Inefficient as has to load the file to get num of lines, then loads it again in Move function
-	tasksFile := OpenTasksFile(false)
+	tasksFile := OpenTasksFile(true, false)
 	tasksFileLines := GetLinesFromFile(tasksFile)
 	tasksFile.Close()
 
