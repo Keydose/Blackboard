@@ -99,18 +99,19 @@ func List() {
 }
 
 func Add(name string, position int) {
-	tasksFile := OpenTasksFile(true, true) // Open file as read-write
-
+	fmt.Printf("Adding task '%s' to position %d\n", name, position)
+	tasksFile := OpenTasksFile(false, true)
 	_, err := tasksFile.WriteString(fmt.Sprintf("%s\n", name))
+	tasksFile.Close()
 	checkError(err)
 
-	fileLines := GetLinesFromFile(tasksFile)
-	fmt.Printf("%v", fileLines)
-	tasksFile.Close() // Close after reading number of lines
-	addedId := len(fileLines)
-
 	if position > 0 {
-		Move(addedId, position) // Will be reopened again as write
+		tasksFile = OpenTasksFile(true, false)
+		taskFileLines := GetLinesFromFile(tasksFile)
+		fmt.Printf("%v", taskFileLines)
+		tasksFile.Close()
+		addedId := len(taskFileLines)
+		Move(addedId, position)
 	}
 }
 
