@@ -105,5 +105,5 @@ TBD - Likely to be on npm
 
 Contributions are always welcome!
 
-As a hobby project for learning Go, I am almost certain that there will be plenty of ways to make efficiency improvements, or tidy things up. 
+As this is just a hobby project for learning Go, I am almost certain that there will be plenty of ways to make efficiency improvements, or tidy things up. 
 
