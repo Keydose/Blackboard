@@ -21,9 +21,17 @@ When used in conjunction with a more elaborate task management system such as Ji
 - Remove tasks from the list when completed
 - Wipe all tasks
 
+## Prerequisites
+
+- [Go 1.11.1 or greater](https://go.dev/doc/install)
+
 ## Installation
 
-TBD - Likely to be on npm
+Execute the following command in your terminal, this will install Blackboard globally.
+
+```
+GO111MODULE=off go get -u github.com/Keydose/Blackboard/cmd/bb
+```
 
 ## Usage/Examples
 
