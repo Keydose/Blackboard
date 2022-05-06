@@ -33,6 +33,8 @@ Execute the following command in your terminal, this will install Blackboard glo
 GO111MODULE=off go get -u github.com/Keydose/Blackboard/cmd/bb
 ```
 
+Alternatively you can download the bb.exe binary from the [releases](https://github.com/Keydose/Blackboard/releases), however you will only be able to use this within the present directory, unless you add it to your PATH.
+
 ## Usage/Examples
 
 ### Add a task
